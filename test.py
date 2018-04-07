@@ -1,3 +1,6 @@
+from pyecharts import Bar
+
+
 from sklearn.datasets import fetch_20newsgroups
 newsgroups_train = fetch_20newsgroups(subset='train')
 from pprint import pprint
@@ -5,6 +8,23 @@ pprint(list(newsgroups_train.target_names))
 print(newsgroups_train.filenames.shape)
 print(newsgroups_train.target.shape)
 print(newsgroups_train.target[:10])
+news = fetch_20newsgroups(subset='all')  
+#cat=['alt.atheism']  
+#newsgroups_atheism= fetch_20newsgroups(subset='all', categories=cat)  
+number = []
+kkk = list(newsgroups_train.target_names)
+for i in kkk:
+    print i
+    target = fetch_20newsgroups(subset='all', categories=[i])
+    number.append(target.filenames.shape[0])
+print (number) 
+
+bar = Bar("数据数量图", "",width=800,height=400)
+bar.add("数量", list(newsgroups_train.target_names),number,is_convert=True,yaxis_interval=0, xaxis_rotate=30, yaxis_rotate=30,yaxis_label_textsize=9)
+#bar.show_config()
+bar.render()
+
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 categories = ['alt.atheism', 'talk.religion.misc','comp.graphics', 'sci.space']
 newsgroups_train = fetch_20newsgroups(subset='train', categories=categories)

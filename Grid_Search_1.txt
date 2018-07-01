@@ -1,0 +1,48 @@
+Loading 20 newsgroups dataset for categories:
+['alt.atheism', 'comp.graphics', 'comp.os.ms-windows.misc', 'comp.sys.ibm.pc.hardware', 'comp.sys.mac.hardware', 'comp.windows.x', 'misc.forsale', 'rec.autos', 'rec.motorcycles', 'rec.sport.baseball', 'rec.sport.hockey', 'sci.crypt', 'sci.electronics', 'sci.med', 'sci.space', 'soc.religion.christian', 'talk.politics.guns', 'talk.politics.mideast', 'talk.politics.misc', 'talk.religion.misc']
+11314 documents
+20 categories
+
+Performing grid search...
+pipeline: ['vect', 'tfidf', 'clf']
+parameters:
+{'clf__alpha': (1e-05, 1e-06),
+ 'clf__penalty': ('l2', 'elasticnet'),
+ 'vect__max_df': (0.5, 0.75, 1.0),
+ 'vect__ngram_range': ((1, 1), (1, 2))}
+Fitting 3 folds for each of 24 candidates, totalling 72 fits
+[Parallel(n_jobs=-1)]: Done  42 tasks      | elapsed:  6.1min
+[Parallel(n_jobs=-1)]: Done  72 out of  72 | elapsed: 10.6min finished
+done in 666.744s
+
+Best score: 0.736
+Best parameters set:
+	clf__alpha: 1e-05
+	clf__penalty: 'elasticnet'
+	vect__max_df: 1.0
+	vect__ngram_range: (1, 2)
+----------------------TEST------------------------
+             precision    recall  f1-score   support
+
+          0       0.50      0.50      0.50       319
+          1       0.62      0.72      0.67       389
+          2       0.69      0.61      0.65       394
+          3       0.59      0.67      0.63       392
+          4       0.70      0.70      0.70       385
+          5       0.81      0.70      0.75       395
+          6       0.80      0.80      0.80       390
+          7       0.77      0.68      0.73       396
+          8       0.81      0.73      0.77       398
+          9       0.56      0.81      0.66       397
+         10       0.87      0.88      0.87       399
+         11       0.82      0.72      0.77       396
+         12       0.62      0.56      0.59       393
+         13       0.78      0.75      0.76       396
+         14       0.73      0.77      0.75       394
+         15       0.67      0.78      0.72       398
+         16       0.58      0.70      0.63       364
+         17       0.79      0.77      0.78       376
+         18       0.64      0.41      0.50       310
+         19       0.44      0.33      0.38       251
+
+avg / total       0.70      0.69      0.69      7532

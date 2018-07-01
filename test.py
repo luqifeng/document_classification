@@ -1,23 +1,32 @@
 #from pyecharts import Bar
-
+from gensim.models import word2vec
+import matplotlib.pyplot as plt
+# plot a line, implicitly creating a subplot(111)
+plt.plot([1,2,3])
+# now create a subplot which represents the top plot of a grid
+# with 2 rows and 1 column. Since this subplot will overlap the
+# first, the plot (and its axes) previously created, will be removed
+plt.subplot(211)
+plt.plot(range(12))
+plt.subplot(212, facecolor='y') # creates 2nd subplot with yellow background
 import numpy as np
 from sklearn.datasets import fetch_20newsgroups
 
 newsgroups_train = fetch_20newsgroups(subset='train')
 from pprint import pprint
-pprint(list(newsgroups_train.target_names))
+categories = list(newsgroups_train.target_names)
 print(newsgroups_train.filenames.shape)
 #print(newsgroups_train.filenames[:10])
 print(newsgroups_train.target.shape)
-print(newsgroups_train.target[:10])
+#print(newsgroups_train.target[:10])
 #news = fetch_20newsgroups(subset='all')  
 
 
-cats = ['alt.atheism', 'sci.space']
-newsgroups_train = fetch_20newsgroups(subset='train', categories=cats)
-print(list(newsgroups_train.target_names))
-print(newsgroups_train.target.shape)
-print(newsgroups_train.target[:10])
+#cats = ['alt.atheism', 'sci.space']
+#newsgroups_train = fetch_20newsgroups(subset='train', categories=cats)
+#print(list(newsgroups_train.target_names))
+#print(newsgroups_train.target.shape)
+#print(newsgroups_train.target[:10])
 #ÊýÁ¿Í¼
 '''
 number = []
@@ -35,8 +44,8 @@ bar.render()
 '''
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-categories = ['alt.atheism', 'talk.religion.misc','comp.graphics', 'sci.space']
-newsgroups_train = fetch_20newsgroups(subset='train', categories=categories)
+#categories = ['alt.atheism', 'talk.religion.misc','comp.graphics', 'sci.space']
+#newsgroups_train = fetch_20newsgroups(subset='train', categories=categories)
 vectorizer = TfidfVectorizer()
 vectors = vectorizer.fit_transform(newsgroups_train.data)
 print(vectors.shape)
@@ -56,11 +65,11 @@ print(metrics.f1_score(newsgroups_test.target, pred, average='macro'))
 def show_top10(classifier, vectorizer, categories):
     feature_names = np.asarray(vectorizer.get_feature_names())
     for i, category in enumerate(categories):
-        top10 = np.argsort(classifier.coef_[i])[-10:]
+        top10 = np.argsort(classifier.coef_[i])[-100:]
         print("%s: %s" % (category, " ".join(feature_names[top10])))
 
 show_top10(clf, vectorizer, newsgroups_train.target_names)
-pprint(vectorizer.get_feature_names())
+#pprint(vectorizer.get_feature_names())
 
 newsgroups_test = fetch_20newsgroups(subset='test',remove=('headers', 'footers', 'quotes'),categories=categories)
 vectors_test = vectorizer.transform(newsgroups_test.data)

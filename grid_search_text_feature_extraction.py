@@ -16,7 +16,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report
 from sklearn import svm
 from sklearn.neighbors.nearest_centroid import NearestCentroid
-
+from sklearn.feature_selection import SelectKBest,chi2
+from sklearn.linear_model import LogisticRegression
 print(__doc__)
 
 # Display progress logs on stdout
@@ -67,10 +68,22 @@ print()
 
 pipeline = Pipeline([
     ('vect', CountVectorizer(analyzer='word',stop_words='english')),
+    #('reducer', SelectKBest(k=5000)),
     ('tfidf', TfidfTransformer()),
-#    ('clf', SGDClassifier()),
+    #('clf', SGDClassifier()),
+    ('log', LogisticRegression(penalty='l2', dual=False, tol=1e-4, C=1.0, 
+                              fit_intercept=True, 
+                              intercept_scaling=1, 
+                              class_weight=None, 
+                              random_state=None, 
+                              solver='liblinear', 
+                              max_iter=100, 
+                              multi_class='ovr', 
+                              verbose=0, 
+                              warm_start=False, 
+                              n_jobs=1)),
 #    ('svm', NearestCentroid()),
-    ('MLP',MLPClassifier(solver='sgd', activation='relu',alpha=1e-4,hidden_layer_sizes=(100,20), random_state=1,max_iter=30,verbose=10,learning_rate_init=.1)),        
+#    ('MLP',MLPClassifier(solver='sgd', activation='relu',alpha=1e-4,hidden_layer_sizes=(100,20), random_state=1,max_iter=30,verbose=10,learning_rate_init=.1)),        
 #    ('svm', svm.SVC()),
 ])
 
@@ -78,13 +91,13 @@ pipeline = Pipeline([
 # increase processing time in a combinatorial way
 parameters = {
     #'vect__max_df': (0.5, 0.75, 1.0),
-    'vect__max_features': (20000,),#(None, 5000, 10000, 50000),
-    #'vect__ngram_range': ((1, 1), (1, 2)),  # unigrams or bigrams
-    'tfidf__use_idf': (True,)# False),
+    #'vect__max_features': (20000,None),#(None, 5000, 10000, 50000),
+    'vect__ngram_range': ((1, 2),),  # unigrams or bigrams
+    'tfidf__use_idf': (True,),
     #'tfidf__norm': ('l1', 'l2'),
     #'clf__alpha': (0.00001, 0.000001),
-    #'clf__penalty': ('l2', 'elasticnet'),
-    #'clf__n_iter': (10, 50, 80),
+    #'clf__penalty': ('l2', ),
+    #'clf__n_iter': (20,),
     #'svm__decision_function_shape': ('ovr',),
 }
 

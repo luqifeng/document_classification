@@ -1,17 +1,18 @@
 #from pyecharts import Bar
-from gensim.models import word2vec
-import matplotlib.pyplot as plt
-# plot a line, implicitly creating a subplot(111)
-plt.plot([1,2,3])
-# now create a subplot which represents the top plot of a grid
-# with 2 rows and 1 column. Since this subplot will overlap the
-# first, the plot (and its axes) previously created, will be removed
-plt.subplot(211)
-plt.plot(range(12))
-plt.subplot(212, facecolor='y') # creates 2nd subplot with yellow background
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.linear_model import SGDClassifier
+from sklearn.model_selection import GridSearchCV
+from sklearn.neural_network import MLPClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report
+from sklearn import svm
+from sklearn.neighbors.nearest_centroid import NearestCentroid
+from sklearn.naive_bayes import MultinomialNB
 import numpy as np
 from sklearn.datasets import fetch_20newsgroups
-
+from sklearn import metrics
 newsgroups_train = fetch_20newsgroups(subset='train')
 from pprint import pprint
 categories = list(newsgroups_train.target_names)
@@ -28,32 +29,21 @@ print(newsgroups_train.target.shape)
 #print(newsgroups_train.target.shape)
 #print(newsgroups_train.target[:10])
 #数量图
-'''
-number = []
-kkk = list(newsgroups_train.target_names)
-for i in kkk:
-    print i
-    target = fetch_20newsgroups(subset='all', categories=[i])
-    number.append(target.filenames.shape[0])
-print (number) 
-
-bar = Bar("数据数量图", "",width=800,height=400)
-bar.add("数量", list(newsgroups_train.target_names),number,is_convert=True,yaxis_interval=0, xaxis_rotate=30, yaxis_rotate=30,yaxis_label_textsize=9)
-#bar.show_config()
-bar.render()
-'''
-
 from sklearn.feature_extraction.text import TfidfVectorizer
 #categories = ['alt.atheism', 'talk.religion.misc','comp.graphics', 'sci.space']
 #newsgroups_train = fetch_20newsgroups(subset='train', categories=categories)
-vectorizer = TfidfVectorizer()
+vectorizer = TfidfVectorizer(analyzer='word',stop_words='english')
 vectors = vectorizer.fit_transform(newsgroups_train.data)
+print(vectors)
 print(vectors.shape)
+'''
+
+
 
 print(vectors.nnz / float(vectors.shape[0]))
 
-from sklearn.naive_bayes import MultinomialNB
-from sklearn import metrics
+
+
 newsgroups_test = fetch_20newsgroups(subset='test',categories=categories)
 vectors_test = vectorizer.transform(newsgroups_test.data)
 clf = MultinomialNB(alpha=.01)
@@ -71,16 +61,18 @@ def show_top10(classifier, vectorizer, categories):
 show_top10(clf, vectorizer, newsgroups_train.target_names)
 #pprint(vectorizer.get_feature_names())
 
-newsgroups_test = fetch_20newsgroups(subset='test',remove=('headers', 'footers', 'quotes'),categories=categories)
+
 vectors_test = vectorizer.transform(newsgroups_test.data)
 pred = clf.predict(vectors_test)
 print(metrics.f1_score(pred, newsgroups_test.target, average='macro'))
-
+'''
 newsgroups_train = fetch_20newsgroups(subset='train',
                                      remove=('headers', 'footers', 'quotes'),
                                      categories=categories)
+newsgroups_test = fetch_20newsgroups(subset='test',remove=('headers', 'footers', 'quotes'),categories=categories)
 vectors = vectorizer.fit_transform(newsgroups_train.data)
-clf = MultinomialNB(alpha=.01)
+#clf = MultinomialNB(alpha=.01)
+clf = SGDClassifier()
 clf.fit(vectors, newsgroups_train.target)
 vectors_test = vectorizer.transform(newsgroups_test.data)
 pred = clf.predict(vectors_test)

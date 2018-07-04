@@ -90,7 +90,8 @@ pipeline = Pipeline([
 # uncommenting more parameters will give better exploring power but will
 # increase processing time in a combinatorial way
 parameters = {
-    #'vect__max_df': (0.5, 0.75, 1.0),
+    'vect__min_df':(0.01,),
+    'vect__max_df': (0.5,),# 0.75, 1.0),
     #'vect__max_features': (20000,None),#(None, 5000, 10000, 50000),
     'vect__ngram_range': ((1, 2),),  # unigrams or bigrams
     'tfidf__use_idf': (True,),

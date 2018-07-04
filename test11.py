@@ -1,98 +1,138 @@
+# Authors: Jan Hendrik Metzen <jhm@informatik.uni-bremen.de>
+# License: BSD 3 clause
+
+
+from __future__ import division
 import time
 
-import matplotlib.pyplot as plt
 import numpy as np
 
-from sklearn.datasets import fetch_20newsgroups_vectorized
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
+from sklearn.svm import SVR
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import learning_curve
+from sklearn.kernel_ridge import KernelRidge
+import matplotlib.pyplot as plt
 
-print(__doc__)
-# Author: Arthur Mensch
+rng = np.random.RandomState(0)
 
-t0 = time.clock()
+# #############################################################################
+# Generate sample data
+X = 5 * rng.rand(10000, 1)
+y = np.sin(X).ravel()
 
-# We use SAGA solver
-solver = 'saga'
+# Add noise to targets
+y[::5] += 3 * (0.5 - rng.rand(X.shape[0] // 5))
 
-# Turn down for faster run time
-n_samples = 10000
+X_plot = np.linspace(0, 5, 100000)[:, None]
 
-# Memorized fetch_rcv1 for faster access
-dataset = fetch_20newsgroups_vectorized('all')
-X = dataset.data
-y = dataset.target
-X = X[:n_samples]
-y = y[:n_samples]
+# #############################################################################
+# Fit regression model
+train_size = 100
+svr = GridSearchCV(SVR(kernel='rbf', gamma=0.1), cv=5,
+                   param_grid={"C": [1e0, 1e1, 1e2, 1e3],
+                               "gamma": np.logspace(-2, 2, 5)})
 
-X_train, X_test, y_train, y_test = train_test_split(X, y,
-                                                    random_state=42,
-                                                    stratify=y,
-                                                    test_size=0.1)
-train_samples, n_features = X_train.shape
-n_classes = np.unique(y).shape[0]
+kr = GridSearchCV(KernelRidge(kernel='rbf', gamma=0.1), cv=5,
+                  param_grid={"alpha": [1e0, 0.1, 1e-2, 1e-3],
+                              "gamma": np.logspace(-2, 2, 5)})
 
-print('Dataset 20newsgroup, train_samples=%i, n_features=%i, n_classes=%i'
-      % (train_samples, n_features, n_classes))
+t0 = time.time()
+svr.fit(X[:train_size], y[:train_size])
+svr_fit = time.time() - t0
+print("SVR complexity and bandwidth selected and model fitted in %.3f s"
+      % svr_fit)
 
-models = {'ovr': {'name': 'One versus Rest', 'iters': [1, 3]},
-          'multinomial': {'name': 'Multinomial', 'iters': [1, 3, 7]}}
+t0 = time.time()
+kr.fit(X[:train_size], y[:train_size])
+kr_fit = time.time() - t0
+print("KRR complexity and bandwidth selected and model fitted in %.3f s"
+      % kr_fit)
 
-for model in models:
-    # Add initial chance-level values for plotting purpose
-    accuracies = [1 / n_classes]
-    times = [0]
-    densities = [1]
+sv_ratio = svr.best_estimator_.support_.shape[0] / train_size
+print("Support vector ratio: %.3f" % sv_ratio)
 
-    model_params = models[model]
+t0 = time.time()
+y_svr = svr.predict(X_plot)
+svr_predict = time.time() - t0
+print("SVR prediction for %d inputs in %.3f s"
+      % (X_plot.shape[0], svr_predict))
 
-    # Small number of epochs for fast runtime
-    for this_max_iter in model_params['iters']:
-        print('[model=%s, solver=%s] Number of epochs: %s' %
-              (model_params['name'], solver, this_max_iter))
-        lr = LogisticRegression(solver=solver,
-                                multi_class=model,
-                                C=1,
-                                penalty='l1',
-                                fit_intercept=True,
-                                max_iter=this_max_iter,
-                                random_state=42,
-                                )
-        t1 = time.clock()
-        lr.fit(X_train, y_train)
-        train_time = time.clock() - t1
+t0 = time.time()
+y_kr = kr.predict(X_plot)
+kr_predict = time.time() - t0
+print("KRR prediction for %d inputs in %.3f s"
+      % (X_plot.shape[0], kr_predict))
 
-        y_pred = lr.predict(X_test)
-        accuracy = np.sum(y_pred == y_test) / y_test.shape[0]
-        density = np.mean(lr.coef_ != 0, axis=1) * 100
-        accuracies.append(accuracy)
-        densities.append(density)
-        times.append(train_time)
-    models[model]['times'] = times
-    models[model]['densities'] = densities
-    models[model]['accuracies'] = accuracies
-    print('Test accuracy for model %s: %.4f' % (model, accuracies[-1]))
-    print('%% non-zero coefficients for model %s, '
-          'per class:\n %s' % (model, densities[-1]))
-    print('Run time (%i epochs) for model %s:'
-          '%.2f' % (model_params['iters'][-1], model, times[-1]))
 
-fig = plt.figure()
-ax = fig.add_subplot(111)
+# #############################################################################
+# Look at the results
+sv_ind = svr.best_estimator_.support_
+plt.scatter(X[sv_ind], y[sv_ind], c='r', s=50, label='SVR support vectors',
+            zorder=2, edgecolors=(0, 0, 0))
+plt.scatter(X[:100], y[:100], c='k', label='data', zorder=1,
+            edgecolors=(0, 0, 0))
+plt.plot(X_plot, y_svr, c='r',
+         label='SVR (fit: %.3fs, predict: %.3fs)' % (svr_fit, svr_predict))
+plt.plot(X_plot, y_kr, c='g',
+         label='KRR (fit: %.3fs, predict: %.3fs)' % (kr_fit, kr_predict))
+plt.xlabel('data')
+plt.ylabel('target')
+plt.title('SVR versus Kernel Ridge')
+plt.legend()
 
-for model in models:
-    name = models[model]['name']
-    times = models[model]['times']
-    accuracies = models[model]['accuracies']
-    ax.plot(times, accuracies, marker='o',
-            label='Model: %s' % name)
-    ax.set_xlabel('Train time (s)')
-    ax.set_ylabel('Test accuracy')
-ax.legend()
-fig.suptitle('Multinomial vs One-vs-Rest Logistic L1\n'
-             'Dataset %s' % '20newsgroups')
-fig.tight_layout()
-fig.subplots_adjust(top=0.85)
-run_time = time.clock() - t0
-print('Example run in %.3f s' % run_time)
+# Visualize training and prediction time
+plt.figure()
+
+# Generate sample data
+X = 5 * rng.rand(10000, 1)
+y = np.sin(X).ravel()
+y[::5] += 3 * (0.5 - rng.rand(X.shape[0] // 5))
+sizes = np.logspace(1, 4, 7, dtype=np.int)
+for name, estimator in {"KRR": KernelRidge(kernel='rbf', alpha=0.1,
+                                           gamma=10),
+                        "SVR": SVR(kernel='rbf', C=1e1, gamma=10)}.items():
+    train_time = []
+    test_time = []
+    for train_test_size in sizes:
+        t0 = time.time()
+        estimator.fit(X[:train_test_size], y[:train_test_size])
+        train_time.append(time.time() - t0)
+
+        t0 = time.time()
+        estimator.predict(X_plot[:1000])
+        test_time.append(time.time() - t0)
+
+    plt.plot(sizes, train_time, 'o-', color="r" if name == "SVR" else "g",
+             label="%s (train)" % name)
+    plt.plot(sizes, test_time, 'o--', color="r" if name == "SVR" else "g",
+             label="%s (test)" % name)
+
+plt.xscale("log")
+plt.yscale("log")
+plt.xlabel("Train size")
+plt.ylabel("Time (seconds)")
+plt.title('Execution Time')
+plt.legend(loc="best")
+
+# Visualize learning curves
+plt.figure()
+
+svr = SVR(kernel='rbf', C=1e1, gamma=0.1)
+kr = KernelRidge(kernel='rbf', alpha=0.1, gamma=0.1)
+train_sizes, train_scores_svr, test_scores_svr = \
+    learning_curve(svr, X[:100], y[:100], train_sizes=np.linspace(0.1, 1, 10),
+                   scoring="neg_mean_squared_error", cv=10)
+train_sizes_abs, train_scores_kr, test_scores_kr = \
+    learning_curve(kr, X[:100], y[:100], train_sizes=np.linspace(0.1, 1, 10),
+                   scoring="neg_mean_squared_error", cv=10)
+
+plt.plot(train_sizes, -test_scores_svr.mean(1), 'o-', color="r",
+         label="SVR")
+plt.plot(train_sizes, -test_scores_kr.mean(1), 'o-', color="g",
+         label="KRR")
+plt.xlabel("Train size")
+plt.ylabel("Mean Squared Error")
+plt.title('Learning curves')
+plt.legend(loc="best")
+
 plt.show()

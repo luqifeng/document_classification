@@ -16,7 +16,7 @@ from sklearn import metrics
 newsgroups_train = fetch_20newsgroups(subset='train')
 from pprint import pprint
 categories = list(newsgroups_train.target_names)
-print(newsgroups_train.filenames.shape)
+print(categories)
 #print(newsgroups_train.filenames[:10])
 print(newsgroups_train.target.shape)
 #print(newsgroups_train.target[:10])

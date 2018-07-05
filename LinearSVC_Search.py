@@ -70,11 +70,11 @@ pipeline = Pipeline([
     ('vect', CountVectorizer(analyzer='word',stop_words='english')),
     #('reducer', SelectKBest(k=5000)),
     ('tfidf', TfidfTransformer()),
-    ('clf', SGDClassifier()),
+#    ('clf', SGDClassifier()),
 
 #    ('svm', NearestCentroid()),
 #    ('MLP',MLPClassifier(solver='sgd', activation='relu',alpha=1e-4,hidden_layer_sizes=(100,20), random_state=1,max_iter=30,verbose=10,learning_rate_init=.1)),        
-#    ('svm', svm.SVC()),
+    ('svm', svm.LinearSVC()),
 ])
 
 # uncommenting more parameters will give better exploring power but will
@@ -86,8 +86,8 @@ parameters = {
     'vect__ngram_range': ((1, 2),),  # unigrams or bigrams
     'tfidf__use_idf': (True,),
     #'tfidf__norm': ('l1', 'l2'),
-    'clf__alpha': (0.001, 0.0001),
-    'clf__penalty': ('l2','l1' ),
+    #'clf__alpha': (0.001, 0.0001),
+    #'clf__penalty': ('l2','l1' ),
     #'clf__n_iter': (20,),
     #'svm__decision_function_shape': ('ovr',),
 }

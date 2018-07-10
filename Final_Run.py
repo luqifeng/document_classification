@@ -45,7 +45,7 @@ categories =[
 # 'talk.politics.misc',
 # 'talk.religion.misc'
 ]
-categories = list(newsgroups_train.target_names)
+#categories = list(newsgroups_train.target_names)
 
 print(categories)
 
@@ -67,14 +67,14 @@ tfidf_transformer = TfidfTransformer(use_idf=True)
 X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
 
 feature_names = count_vect.get_feature_names()
-ch2 = SelectKBest(chi2, k=1000)
+ch2 = SelectKBest(chi2, k=1500)
 X_train = ch2.fit_transform(X_train_tfidf, newsgroups_train.target)
 
 selected_feature_names = [feature_names[i] for i in ch2.get_support(indices=True)]
 
 
-#clf = GradientBoostingClassifier(n_estimators=100, learning_rate=1,max_depth=3, random_state=0)
-#clf2 = MultinomialNB(alpha=0.1)
+#clf = GradientBoostingClassifier(n_estimators=50, learning_rate=0.3,max_depth=3, random_state=0)
+#clf = MultinomialNB(alpha=0.1)
 #clf = svm.LinearSVC(max_iter = 2000)
 clf = SGDClassifier(alpha=.0001, n_iter=50, penalty="elasticnet")
 

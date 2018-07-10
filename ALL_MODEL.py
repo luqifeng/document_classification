@@ -119,7 +119,7 @@ if opts.filtered:
     remove = ('headers', 'footers', 'quotes')
 else:
     remove = ()
-
+remove = ('headers', 'footers', 'quotes')
 print("Loading 20 newsgroups dataset for categories:")
 print(categories if categories else "all")
 
